@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+pandas
+scikit-learn
+python-dotenv

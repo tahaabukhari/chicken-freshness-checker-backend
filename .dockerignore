@@ -1,0 +1,14 @@
+.venv
+venv
+env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+database.db
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
