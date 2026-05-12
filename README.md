@@ -94,3 +94,7 @@ gcloud run deploy chicken-freshness-checker --image $IMAGE --region us-central1 
 - Pin package versions in `requirements.txt` for reproducible builds.
 
 If you want, I can: create the remote GitHub repo for you (requires a GitHub token), or, with your permission, run the `gh` and `gcloud` commands from your environment to finish the deployment.
+
+Docs
+- Project documentation: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
+- Feature test report: [docs/FEATURE_TEST_REPORT.md](docs/FEATURE_TEST_REPORT.md)

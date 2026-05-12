@@ -32,9 +32,28 @@ jobs:
           tags: gcr.io/${{ secrets.GCP_PROJECT }}/chicken-freshness-checker:${{ github.sha }}
 
       - name: Deploy to Cloud Run
+        id: deploy
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           service: chicken-freshness-checker
           image: gcr.io/${{ secrets.GCP_PROJECT }}/chicken-freshness-checker:${{ github.sha }}
           region: ${{ secrets.GCP_REGION }}
           allow-unauthenticated: true
+          memory: 512Mi
+          concurrency: 80
+          min_instances: 1
+          env_vars: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}
+
+      - name: Setup Python for post-deploy test
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Run post-deploy smoke test
+        run: |
+          python -m pip install -r requirements.txt
+          python scripts/test_post.py
+        env:
+          SERVICE_URL: ${{ steps.deploy.outputs.service_url }}

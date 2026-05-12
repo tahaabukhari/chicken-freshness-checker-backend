@@ -6,6 +6,8 @@ GET  /api/status/{id}    → IoT device polls for commands
 GET  /api/live/{id}      → Android app fetches the latest reading
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
@@ -15,6 +17,7 @@ from app.schemas import IoTPacketIn, LiveDataOut, DeviceStatusOut
 from app.services.analyzer import calculate_spoilage
 
 router = APIRouter(prefix="/api", tags=["IoT"])
+logger = logging.getLogger("chicken_freshness_checker.routes")
 
 
 # ---------------------------------------------------------------------------
@@ -30,6 +33,8 @@ def ingest_reading(
     the spoilage analyzer, persists the result, and returns the processed
     reading.
     """
+
+    logger.info("ingest received from device=%s", packet.device_id)
 
     # 1. Run the ML / processing pipeline
     spoilage_percent, category = calculate_spoilage(
@@ -50,9 +55,16 @@ def ingest_reading(
     )
 
     # 3. Persist to database
-    session.add(reading)
-    session.commit()
-    session.refresh(reading)
+    try:
+        session.add(reading)
+        session.commit()
+        session.refresh(reading)
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to persist reading for device=%s", packet.device_id)
+        raise
+
+    logger.info("reading persisted id=%s device=%s", reading.id, reading.device_id)
 
     # 4. Return the processed reading
     return reading
